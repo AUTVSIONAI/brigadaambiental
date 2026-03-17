@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: brigada
     ports:
-      - "5440:5432"
+      - "127.0.0.1:5440:5432"
     volumes:
       - brigada_pgdata:/var/lib/postgresql/data
     healthcheck:
