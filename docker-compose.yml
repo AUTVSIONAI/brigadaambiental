@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: brigada
+    ports:
+      - "5440:5432"
+    volumes:
+      - brigada_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d brigada"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build:
+      context: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3111
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/brigada?schema=public
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_REFERER: ${OPENROUTER_REFERER:-http://localhost}
+      OPENROUTER_TITLE: ${OPENROUTER_TITLE:-Brigada Ambiental}
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "3111:3111"
+
+volumes:
+  brigada_pgdata:

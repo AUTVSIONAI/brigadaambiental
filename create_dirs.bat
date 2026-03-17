@@ -1,0 +1,13 @@
+mkdir src\app\dashboard
+mkdir src\app\site
+mkdir src\components\auth
+mkdir src\components\dashboard
+mkdir src\components\site
+mkdir src\components\map
+mkdir src\components\tasks
+mkdir src\components\chat
+mkdir src\lib
+mkdir src\hooks
+mkdir src\types
+mkdir src\services
+mkdir src\utils

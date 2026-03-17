@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN_BRIGADA
+  COMANDANTE
+  SUPERVISOR
+  BRIGADISTA
+}
+
+enum TaskType {
+  PATRULHA
+  MONITORAMENTO
+  COMBATE
+  PREVENCAO
+  RESCATE
+  LIMPEZA
+}
+
+enum TaskStatus {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDA
+  CANCELADA
+}
+
+enum TaskPriority {
+  BAIXA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  role         UserRole  @default(BRIGADISTA)
+  passwordHash String?
+  avatar       String?
+  region       String?
+
+  brigadeId String?
+  brigade   Brigade? @relation("BrigadeMembers", fields: [brigadeId], references: [id])
+  brigadesLed Brigade[] @relation("BrigadeLeader")
+
+  tasksAssigned Task[]   @relation("TaskAssignee")
+  actions       Action[]
+  locationPings LocationPing[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Brigade {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  region      String
+
+  parentId String?
+  parent   Brigade? @relation("BrigadeHierarchy", fields: [parentId], references: [id])
+  children Brigade[] @relation("BrigadeHierarchy")
+
+  leaderId String
+  leader   User     @relation("BrigadeLeader", fields: [leaderId], references: [id])
+
+  members User[] @relation("BrigadeMembers")
+  tasks   Task[]
+  locationPings LocationPing[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  type        TaskType
+  description String
+  latitude    Float
+  longitude   Float
+
+  brigadeId String
+  brigade   Brigade @relation(fields: [brigadeId], references: [id])
+
+  userId   String?
+  assignee User? @relation("TaskAssignee", fields: [userId], references: [id])
+
+  status      TaskStatus   @default(PENDENTE)
+  priority    TaskPriority @default(MEDIA)
+  dueDate     DateTime?
+  completedAt DateTime?
+
+  actions Action[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Action {
+  id          String   @id @default(cuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  type        String
+  description String
+  photos      String[]
+  latitude    Float
+  longitude   Float
+  createdAt   DateTime @default(now())
+}
+
+model LocationPing {
+  id       String  @id @default(cuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id])
+  brigadeId String?
+  brigade   Brigade? @relation(fields: [brigadeId], references: [id])
+
+  latitude  Float
+  longitude Float
+  accuracy  Float?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([brigadeId, createdAt])
+}
+
+model AiConfig {
+  id           String   @id @default("default")
+  systemPrompt String
+  model        String
+  temperature  Float    @default(0.3)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
