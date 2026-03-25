@@ -1,7 +1,7 @@
-'use client';
+ 'use client';
 
-import { useState, useEffect, useContext, createContext, createElement } from 'react';
-import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useContext, useMemo, useState, createContext, createElement } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { dashboardPathForRole, User, UserRole } from '@/types/auth';
 import { ApiError, apiService } from '@/services/api';
 
@@ -20,24 +20,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  const shouldCheckAuth = useMemo(() => {
+    if (!pathname) return false;
+    if (pathname.startsWith('/dashboard')) return true;
+    if (pathname.startsWith('/auth')) return true;
+    return false;
+  }, [pathname]);
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const currentUser = await apiService.getCurrentUser();
       setUser(currentUser);
     } catch (error) {
-      console.error('Auth check failed:', error);
       if (error instanceof ApiError && error.status === 401) {
         apiService.logout();
+        setUser(null);
+        return;
       }
+      throw error;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!shouldCheckAuth) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    void checkAuth().catch(() => {});
+  }, [checkAuth, shouldCheckAuth]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -45,7 +61,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(response.user);
       router.push(dashboardPathForRole(response.user.role));
     } catch (error) {
-      console.error('Login failed:', error);
       throw error;
     }
   };

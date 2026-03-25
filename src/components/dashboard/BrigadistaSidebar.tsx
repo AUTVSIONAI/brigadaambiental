@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 interface BrigadistaSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -17,7 +19,10 @@ export function BrigadistaSidebar({ activeTab, setActiveTab }: BrigadistaSidebar
   return (
     <div className="w-64 bg-white shadow-lg shrink-0 relative z-50">
       <div className="p-6">
-        <h1 className="text-xl font-bold text-gray-800">Brigadista</h1>
+        <div className="flex items-center gap-2">
+          <Image src="/logo.png" alt="Brigada Ambiental" width={28} height={28} />
+          <h1 className="text-xl font-bold text-gray-800">Brigadista</h1>
+        </div>
       </div>
       <nav className="mt-6">
         {menuItems.map((item) => (

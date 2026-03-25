@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '@/types/chat';
-import { apiService } from '@/services/api';
+import { ApiError, apiService } from '@/services/api';
 
 export function ChatIA() {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -50,9 +50,18 @@ export function ChatIA() {
       setMessages((prev) => [...prev, assistantMessage]);
       setLoading(false);
     } catch (error) {
+      let content = 'Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente.';
+      if (error instanceof ApiError) {
+        if (typeof error.body === 'object' && error.body && 'error' in (error.body as any)) {
+          const msg = (error.body as any).error;
+          if (typeof msg === 'string' && msg.trim()) content = msg.trim();
+        } else if (typeof error.body === 'string' && error.body.trim()) {
+          content = error.body.trim();
+        }
+      }
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: 'Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente.',
+        content,
         role: 'assistant',
         timestamp: new Date().toISOString(),
       };
