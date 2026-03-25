@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
     host.includes('localhost') || host.startsWith('127.0.0.1') || host.startsWith('0.0.0.0');
   const proto = isLocalHost ? 'http' : 'https';
   const baseUrl = new URL(`${proto}://${host}`);
-  const logoUrl = new URL('/logo.png', baseUrl).toString();
+  const logoUrl = new URL('/logo.jpeg', baseUrl).toString();
 
   const title = 'Brigada Ambiental International';
   const description =
@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     applicationName: title,
     icons: {
       icon: '/favicon.ico',
-      apple: '/logo.png',
+      apple: '/logo.jpeg',
     },
     openGraph: {
       title,
@@ -32,14 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: title,
       locale: 'pt_BR',
       type: 'website',
-      images: [
-        {
-          url: logoUrl,
-          alt: title,
-          width: 512,
-          height: 512,
-        },
-      ],
+      images: [{ url: logoUrl, alt: title, width: 512, height: 512 }],
     },
     twitter: {
       card: 'summary_large_image',
