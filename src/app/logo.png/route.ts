@@ -12,6 +12,33 @@ const logoPatterns = [
   /^logo\.svg$/i,
 ];
 
+function detectContentType(data: Buffer, filePath: string) {
+  if (data.length >= 8) {
+    const isPng =
+      data[0] === 0x89 &&
+      data[1] === 0x50 &&
+      data[2] === 0x4e &&
+      data[3] === 0x47 &&
+      data[4] === 0x0d &&
+      data[5] === 0x0a &&
+      data[6] === 0x1a &&
+      data[7] === 0x0a;
+    if (isPng) return 'image/png';
+  }
+  if (data.length >= 3) {
+    const isJpeg = data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff;
+    if (isJpeg) return 'image/jpeg';
+  }
+
+  const head = data.toString('utf8', 0, Math.min(256, data.length)).toLowerCase();
+  if (head.includes('<svg')) return 'image/svg+xml';
+
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.svg') return 'image/svg+xml';
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  return 'image/png';
+}
+
 async function findLogoInDir(dir: string) {
   try {
     const entries = await readdir(dir, { withFileTypes: true });
@@ -66,13 +93,7 @@ export async function GET() {
   const result = await readFirst(discovered ? [discovered, ...candidates] : candidates);
   if (!result) return new NextResponse(null, { status: 404 });
 
-  const ext = path.extname(result.filePath).toLowerCase();
-  const contentType =
-    ext === '.svg'
-      ? 'image/svg+xml'
-      : ext === '.jpg' || ext === '.jpeg'
-        ? 'image/jpeg'
-        : 'image/png';
+  const contentType = detectContentType(result.data, result.filePath);
   const contentLength = result.data.byteLength.toString();
 
   return new NextResponse(result.data, {
@@ -115,13 +136,7 @@ export async function HEAD() {
   const result = await readFirst(discovered ? [discovered, ...candidates] : candidates);
   if (!result) return new NextResponse(null, { status: 404 });
 
-  const ext = path.extname(result.filePath).toLowerCase();
-  const contentType =
-    ext === '.svg'
-      ? 'image/svg+xml'
-      : ext === '.jpg' || ext === '.jpeg'
-        ? 'image/jpeg'
-        : 'image/png';
+  const contentType = detectContentType(result.data, result.filePath);
   const contentLength = result.data.byteLength.toString();
 
   return new NextResponse(null, {
