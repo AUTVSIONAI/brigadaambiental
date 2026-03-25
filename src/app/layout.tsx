@@ -6,10 +6,9 @@ import { headers } from 'next/headers';
 export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
   const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3111';
-  const protoHeader = h.get('x-forwarded-proto');
   const isLocalHost =
     host.includes('localhost') || host.startsWith('127.0.0.1') || host.startsWith('0.0.0.0');
-  const proto = protoHeader ?? (isLocalHost ? 'http' : 'https');
+  const proto = isLocalHost ? 'http' : 'https';
   const baseUrl = new URL(`${proto}://${host}`);
   const logoUrl = new URL('/logo.png', baseUrl).toString();
 

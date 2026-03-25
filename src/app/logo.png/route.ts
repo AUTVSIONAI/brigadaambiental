@@ -42,11 +42,51 @@ export async function GET() {
       : ext === '.jpg' || ext === '.jpeg'
         ? 'image/jpeg'
         : 'image/png';
+  const contentLength = result.data.byteLength.toString();
 
   return new NextResponse(result.data, {
     status: 200,
     headers: {
       'Content-Type': contentType,
+      'Content-Length': contentLength,
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    },
+  });
+}
+
+export async function HEAD() {
+  const rootDir = process.cwd();
+  const publicDir = path.join(rootDir, 'public');
+  const legacyPublicDir = path.join(rootDir, 'brigada-platform', 'public');
+  const candidates = [
+    path.join(publicDir, 'logo.png'),
+    path.join(publicDir, 'logo.PNG'),
+    path.join(publicDir, 'logo.jpg'),
+    path.join(publicDir, 'logo.jpeg'),
+    path.join(publicDir, 'logo.svg'),
+    path.join(legacyPublicDir, 'logo.png'),
+    path.join(legacyPublicDir, 'logo.PNG'),
+    path.join(legacyPublicDir, 'logo.jpg'),
+    path.join(legacyPublicDir, 'logo.jpeg'),
+    path.join(legacyPublicDir, 'logo.svg'),
+  ];
+  const result = await readFirst(candidates);
+  if (!result) return new NextResponse(null, { status: 404 });
+
+  const ext = path.extname(result.filePath).toLowerCase();
+  const contentType =
+    ext === '.svg'
+      ? 'image/svg+xml'
+      : ext === '.jpg' || ext === '.jpeg'
+        ? 'image/jpeg'
+        : 'image/png';
+  const contentLength = result.data.byteLength.toString();
+
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Content-Type': contentType,
+      'Content-Length': contentLength,
       'Cache-Control': 'public, max-age=31536000, immutable',
     },
   });
