@@ -47,6 +47,15 @@ async function findLogoInDir(dir: string) {
       const found = files.find((f) => pattern.test(f));
       if (found) return path.join(dir, found);
     }
+    const subdir = path.join(dir, 'logo');
+    try {
+      const subEntries = await readdir(subdir, { withFileTypes: true });
+      const subFiles = subEntries.filter((e) => e.isFile()).map((e) => e.name);
+      for (const pattern of logoPatterns) {
+        const sfound = subFiles.find((f) => pattern.test(f));
+        if (sfound) return path.join(subdir, sfound);
+      }
+    } catch {}
     return null;
   } catch {
     return null;
