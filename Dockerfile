@@ -7,7 +7,9 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN mkdir -p public
+RUN mkdir -p public && \
+    if [ -d "brigada-platform/public/logo" ]; then cp -r brigada-platform/public/logo/* public/ || true; fi && \
+    if [ -d "brigada-platform/public" ]; then cp -r brigada-platform/public/* public/ || true; fi
 RUN npx prisma generate
 RUN npm run build
 
