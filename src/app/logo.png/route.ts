@@ -91,7 +91,39 @@ export async function GET() {
   ];
 
   const result = await readFirst(discovered ? [discovered, ...candidates] : candidates);
-  if (!result) return new NextResponse(null, { status: 404 });
+  if (!result) {
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="84" y="92" width="1032" height="446" rx="28" fill="#ffffff" opacity="0.08"/>
+  <g transform="translate(110, 170)">
+    <rect x="0" y="0" width="110" height="110" rx="24" fill="#10b981"/>
+    <path d="M55 20c16 16 32 20 45 22v26c0 40-22 66-45 82-23-16-45-42-45-82V42c13-2 29-6 45-22z" fill="#06281f" opacity="0.25"/>
+    <path d="M55 28c14 14 28 17 39 19v21c0 33-18 55-39 69-21-14-39-36-39-69V47c11-2 25-5 39-19z" fill="#ffffff" opacity="0.95"/>
+  </g>
+  <g fill="#ffffff" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" transform="translate(250, 205)">
+    <text x="0" y="0" font-size="56" font-weight="700">Brigada Ambiental International</text>
+    <text x="0" y="58" font-size="26" font-weight="500" opacity="0.9">Operação • Prevenção • Resposta</text>
+    <text x="0" y="118" font-size="22" opacity="0.85">Logo não encontrado no servidor. Adicione /public/logo.png ou /public/logo.jpeg.</text>
+  </g>
+</svg>`;
+
+    const bytes = Buffer.from(svg, 'utf8');
+    return new NextResponse(bytes, {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/svg+xml',
+        'Content-Length': bytes.byteLength.toString(),
+        'Cache-Control': 'public, max-age=300',
+      },
+    });
+  }
 
   const contentType = detectContentType(result.data, result.filePath);
   const contentLength = result.data.byteLength.toString();
@@ -134,7 +166,15 @@ export async function HEAD() {
   ];
 
   const result = await readFirst(discovered ? [discovered, ...candidates] : candidates);
-  if (!result) return new NextResponse(null, { status: 404 });
+  if (!result) {
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control': 'public, max-age=300',
+      },
+    });
+  }
 
   const contentType = detectContentType(result.data, result.filePath);
   const contentLength = result.data.byteLength.toString();
