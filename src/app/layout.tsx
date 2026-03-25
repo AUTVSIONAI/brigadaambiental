@@ -6,8 +6,12 @@ import { headers } from 'next/headers';
 export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
   const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3111';
-  const proto = h.get('x-forwarded-proto') ?? 'http';
+  const protoHeader = h.get('x-forwarded-proto');
+  const isLocalHost =
+    host.includes('localhost') || host.startsWith('127.0.0.1') || host.startsWith('0.0.0.0');
+  const proto = protoHeader ?? (isLocalHost ? 'http' : 'https');
   const baseUrl = new URL(`${proto}://${host}`);
+  const logoUrl = new URL('/logo.png', baseUrl).toString();
 
   const title = 'Brigada Ambiental International';
   const description =
@@ -31,8 +35,10 @@ export async function generateMetadata(): Promise<Metadata> {
       type: 'website',
       images: [
         {
-          url: '/logo.png',
+          url: logoUrl,
           alt: title,
+          width: 512,
+          height: 512,
         },
       ],
     },
@@ -40,7 +46,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title,
       description,
-      images: ['/logo.png'],
+      images: [logoUrl],
     },
   };
 }
