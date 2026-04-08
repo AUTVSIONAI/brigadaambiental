@@ -74,3 +74,53 @@ export interface LocationPing {
   accuracy?: number;
   createdAt: string;
 }
+
+export enum ReportType {
+  LIXO = 'LIXO',
+  INCENDIO = 'INCENDIO',
+  DESMATAMENTO = 'DESMATAMENTO',
+  CACA = 'CACA',
+  POLUICAO = 'POLUICAO',
+  OUTRO = 'OUTRO',
+}
+
+export enum ReportStatus {
+  RECEBIDA = 'RECEBIDA',
+  TRIAGEM = 'TRIAGEM',
+  EM_VERIFICACAO = 'EM_VERIFICACAO',
+  CONFIRMADA = 'CONFIRMADA',
+  ENCERRADA = 'ENCERRADA',
+}
+
+export interface Report {
+  id: string;
+  type: ReportType;
+  description: string;
+  photos: string[];
+  latitude: number;
+  longitude: number;
+  reporterUserId?: string;
+  reporterName?: string;
+  reporterContact?: string;
+  brigadeId?: string;
+  status: ReportStatus;
+  assignedToId?: string;
+  reviewedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TimeClockSession {
+  id: string;
+  userId: string;
+  brigadeId?: string;
+  startedAt: string;
+  endedAt?: string;
+  startLatitude?: number;
+  startLongitude?: number;
+  endLatitude?: number;
+  endLongitude?: number;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}

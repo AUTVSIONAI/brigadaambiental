@@ -7,6 +7,8 @@ import { TaskList } from '@/components/tasks/TaskList';
 import { ActionForm } from '@/components/tasks/ActionForm';
 import { ChatIA } from '@/components/chat/ChatIA';
 import { RecentActions } from '@/components/dashboard/RecentActions';
+import { DenunciaForm } from '@/components/denuncias/DenunciaForm';
+import { PontoBrigadista } from '@/components/ponto/PontoBrigadista';
 import { UserRole } from '@/types/auth';
 import { useEffect, useState } from 'react';
 
@@ -52,6 +54,8 @@ export default function DashboardBrigadistaPage() {
         <main className="flex-1 p-6">
           {activeTab === 'tasks' && <TaskList />}
           {activeTab === 'actions' && <ActionForm />}
+          {activeTab === 'denuncia' && <DenunciaForm />}
+          {activeTab === 'ponto' && <PontoBrigadista />}
           {activeTab === 'history' && <RecentActions userId={user.id} />}
           {activeTab === 'chat' && <ChatIA />}
           {activeTab === 'map' && (

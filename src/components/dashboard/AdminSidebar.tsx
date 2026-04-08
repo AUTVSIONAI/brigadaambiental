@@ -15,6 +15,8 @@ export function AdminSidebar({ activeTab, setActiveTab, role }: AdminSidebarProp
     { id: 'users', name: 'Brigadistas', icon: '👥' },
     { id: 'brigades', name: 'Brigadas', icon: '🚒' },
     { id: 'tasks', name: 'Tarefas', icon: '📋' },
+    { id: 'denuncias', name: 'Denúncias', icon: '🚨' },
+    { id: 'ponto', name: 'Ponto', icon: '⏱️' },
     { id: 'map', name: 'Mapa', icon: '🗺️' },
     { id: 'ai', name: 'Assistente IA', icon: '🤖' },
   ];

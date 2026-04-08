@@ -11,6 +11,8 @@ export function BrigadistaSidebar({ activeTab, setActiveTab }: BrigadistaSidebar
   const menuItems = [
     { id: 'tasks', name: 'Minhas Tarefas', icon: '📋' },
     { id: 'actions', name: 'Registrar Ação', icon: '✅' },
+    { id: 'denuncia', name: 'Denúncia', icon: '🚨' },
+    { id: 'ponto', name: 'Bater Ponto', icon: '⏱️' },
     { id: 'history', name: 'Histórico', icon: '📈' },
     { id: 'chat', name: 'Chat IA', icon: '🤖' },
     { id: 'map', name: 'Mapa', icon: '🗺️' },

@@ -1,5 +1,17 @@
 import { User, UserRole, LoginCredentials, AuthResponse } from '@/types/auth';
-import { Action, Brigade, LocationPing, Task, TaskPriority, TaskStatus, TaskType } from '@/types/brigada';
+import {
+  Action,
+  Brigade,
+  LocationPing,
+  Report,
+  ReportStatus,
+  ReportType,
+  Task,
+  TaskPriority,
+  TaskStatus,
+  TaskType,
+  TimeClockSession,
+} from '@/types/brigada';
 import { AiConfig, ChatResponse } from '@/types/chat';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
@@ -253,6 +265,44 @@ class ApiService {
             window.location.href = '/auth/login';
           }
         }
+      }
+      throw new ApiError(response.status, `API Error: ${response.statusText}`, errorBody);
+    }
+
+    return response.json();
+  }
+
+  private async requestFormData<T>(endpoint: string, formData: FormData, options: Omit<RequestInit, 'body'> = {}) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const token = this.getToken();
+
+    const headers: HeadersInit = {
+      ...options.headers,
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      method: options.method ?? 'POST',
+      headers,
+      body: formData,
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      let errorBody: unknown = null;
+      try {
+        const contentType = response.headers.get('content-type') ?? '';
+        if (contentType.includes('application/json')) {
+          errorBody = await response.json();
+        } else {
+          errorBody = await response.text();
+        }
+      } catch {
+        errorBody = null;
       }
       throw new ApiError(response.status, `API Error: ${response.statusText}`, errorBody);
     }
@@ -742,6 +792,73 @@ class ApiService {
       method: 'PATCH',
       body: JSON.stringify(patch),
     });
+  }
+
+  // Denúncias
+  async createReport(form: {
+    type: ReportType;
+    description: string;
+    latitude: number;
+    longitude: number;
+    photo: File;
+    reporterName?: string;
+    reporterContact?: string;
+  }): Promise<Report> {
+    const fd = new FormData();
+    fd.set('type', form.type);
+    fd.set('description', form.description);
+    fd.set('latitude', String(form.latitude));
+    fd.set('longitude', String(form.longitude));
+    if (form.reporterName) fd.set('reporterName', form.reporterName);
+    if (form.reporterContact) fd.set('reporterContact', form.reporterContact);
+    fd.set('photo', form.photo);
+    return this.requestFormData<Report>('/denuncias', fd, { method: 'POST' });
+  }
+
+  async getReports(params?: { status?: ReportStatus; brigadeId?: string }): Promise<Report[]> {
+    const qs = new URLSearchParams();
+    if (params?.status) qs.set('status', params.status);
+    if (params?.brigadeId) qs.set('brigadeId', params.brigadeId);
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    return this.request<Report[]>(`/denuncias${suffix}`);
+  }
+
+  async getReport(id: string): Promise<Report & { nearestBrigadistas?: Array<{ userId: string; name: string; latitude: number; longitude: number; createdAt: string; distanceKm: number }> }> {
+    return this.request(`/denuncias/${id}`);
+  }
+
+  async updateReport(
+    id: string,
+    patch: Partial<Pick<Report, 'status' | 'assignedToId'>>
+  ): Promise<Report> {
+    return this.request<Report>(`/denuncias/${id}`, { method: 'PATCH', body: JSON.stringify(patch) });
+  }
+
+  // Ponto
+  async clockIn(payload: { latitude?: number; longitude?: number; note?: string } = {}): Promise<TimeClockSession> {
+    return this.request<TimeClockSession>('/ponto/in', { method: 'POST', body: JSON.stringify(payload) });
+  }
+
+  async clockOut(payload: { latitude?: number; longitude?: number; note?: string } = {}): Promise<TimeClockSession> {
+    return this.request<TimeClockSession>('/ponto/out', { method: 'POST', body: JSON.stringify(payload) });
+  }
+
+  async getMyTimeClock(params?: { from?: string; to?: string }): Promise<{ openSession: TimeClockSession | null; sessions: TimeClockSession[] }> {
+    const qs = new URLSearchParams();
+    if (params?.from) qs.set('from', params.from);
+    if (params?.to) qs.set('to', params.to);
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    return this.request(`/ponto/me${suffix}`);
+  }
+
+  async getTimeClock(params?: { from?: string; to?: string; userId?: string; brigadeId?: string }): Promise<TimeClockSession[]> {
+    const qs = new URLSearchParams();
+    if (params?.from) qs.set('from', params.from);
+    if (params?.to) qs.set('to', params.to);
+    if (params?.userId) qs.set('userId', params.userId);
+    if (params?.brigadeId) qs.set('brigadeId', params.brigadeId);
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    return this.request<TimeClockSession[]>(`/ponto${suffix}`);
   }
 }
 

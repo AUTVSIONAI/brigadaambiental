@@ -7,6 +7,8 @@ import { StatsCards } from '@/components/dashboard/StatsCards';
 import { RecentActions } from '@/components/dashboard/RecentActions';
 import { UserManagement } from '@/components/dashboard/UserManagement';
 import { TaskList } from '@/components/tasks/TaskList';
+import { AdminDenuncias } from '@/components/denuncias/AdminDenuncias';
+import { PontoAdmin } from '@/components/ponto/PontoAdmin';
 import { apiService } from '@/services/api';
 import { Brigade } from '@/types/brigada';
 import { User, UserRole } from '@/types/auth';
@@ -567,6 +569,8 @@ export default function DashboardAdminPage() {
             </div>
           )}
           {activeTab === 'tasks' && <TaskList />}
+          {activeTab === 'denuncias' && <AdminDenuncias />}
+          {activeTab === 'ponto' && <PontoAdmin />}
           {activeTab === 'map' && (
             <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
               <iframe title="Mapa" src="/mapa?embed=1" className="w-full h-[650px]" />
