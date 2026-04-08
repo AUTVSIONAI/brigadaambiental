@@ -132,6 +132,13 @@ export function RecentActions({ userId, limit = 6 }: { userId?: string; limit?: 
                 ))}
               </div>
             )}
+
+            {selected.metadata && (
+              <div className="border rounded-md p-4 bg-gray-50">
+                <div className="text-sm font-medium text-gray-900 mb-2">Detalhes</div>
+                <pre className="text-xs text-gray-700 overflow-auto">{JSON.stringify(selected.metadata, null, 2)}</pre>
+              </div>
+            )}
           </div>
         </dialog>
       )}

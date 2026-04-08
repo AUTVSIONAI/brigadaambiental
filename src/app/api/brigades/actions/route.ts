@@ -12,6 +12,7 @@ function toPublicAction(action: {
   photos: string[];
   latitude: number;
   longitude: number;
+  metadata: any;
   createdAt: Date;
 }) {
   return {
@@ -21,6 +22,7 @@ function toPublicAction(action: {
     type: action.type,
     description: action.description,
     photos: action.photos,
+    metadata: action.metadata ?? undefined,
     location: {
       latitude: action.latitude,
       longitude: action.longitude,
@@ -46,6 +48,18 @@ export async function GET(req: Request) {
           : access && access.managedIds.length > 0
             ? { task: { brigadeId: { in: access.managedIds } } }
             : { userId: auth.sub },
+      select: {
+        id: true,
+        taskId: true,
+        userId: true,
+        type: true,
+        description: true,
+        photos: true,
+        latitude: true,
+        longitude: true,
+        metadata: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
 

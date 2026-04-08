@@ -15,6 +15,9 @@ export function ActionForm() {
     photos: [] as File[],
     latitude: '',
     longitude: '',
+    species: '',
+    seedlings: '',
+    plotCode: '',
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -58,6 +61,22 @@ export function ActionForm() {
     try {
       const latitude = parseFloat(formData.latitude);
       const longitude = parseFloat(formData.longitude);
+      const isPlantio = formData.type === 'PLANTIO';
+      const metadata = isPlantio
+        ? {
+            plantio: {
+              species: formData.species.trim() || undefined,
+              seedlings: formData.seedlings.trim() ? Number(formData.seedlings) : undefined,
+              plotCode: formData.plotCode.trim() || undefined,
+            },
+          }
+        : undefined;
+
+      if (isPlantio && formData.photos.length === 0) {
+        alert('Para PLANTIO, envie pelo menos 1 foto como evidência.');
+        setLoading(false);
+        return;
+      }
       await apiService.createActionWithPhotos({
         taskId: formData.taskId,
         type: formData.type,
@@ -65,6 +84,7 @@ export function ActionForm() {
         latitude,
         longitude,
         photos: formData.photos,
+        metadata,
       });
       
       // Limpar formulário
@@ -75,6 +95,9 @@ export function ActionForm() {
         photos: [],
         latitude: '',
         longitude: '',
+        species: '',
+        seedlings: '',
+        plotCode: '',
       });
       
       setSuccess(true);
@@ -86,6 +109,7 @@ export function ActionForm() {
       setLoading(false);
     }
   };
+
 
   const handleSelectTask = (taskId: string) => {
     const task = selectableTasks.find((t) => t.id === taskId);
@@ -199,8 +223,41 @@ export function ActionForm() {
               <option value="PREVENCAO">Prevenção</option>
               <option value="RESCATE">Resgate</option>
               <option value="LIMPEZA">Limpeza</option>
+              <option value="PLANTIO">Plantio</option>
             </select>
           </div>
+
+          {formData.type === 'PLANTIO' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Espécie</label>
+                <input
+                  value={formData.species}
+                  onChange={(e) => setFormData({ ...formData, species: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="ex.: Ipê-amarelo"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mudas</label>
+                <input
+                  value={formData.seedlings}
+                  onChange={(e) => setFormData({ ...formData, seedlings: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="ex.: 10"
+                />
+              </div>
+              <div className="md:col-span-3">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Código da área (opcional)</label>
+                <input
+                  value={formData.plotCode}
+                  onChange={(e) => setFormData({ ...formData, plotCode: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="ex.: SETOR-3 / TALHÃO-12"
+                />
+              </div>
+            </div>
+          )}
 
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">

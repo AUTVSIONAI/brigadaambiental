@@ -21,6 +21,7 @@ enum TaskType {
   PREVENCAO
   RESCATE
   LIMPEZA
+  PLANTIO
 }
 
 enum TaskStatus {
@@ -136,6 +137,7 @@ model Action {
   photos      String[]
   latitude    Float
   longitude   Float
+  metadata    Json?
   createdAt   DateTime @default(now())
 }
 

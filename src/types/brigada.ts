@@ -34,7 +34,8 @@ export enum TaskType {
   COMBATE = 'COMBATE',
   PREVENCAO = 'PREVENCAO',
   RESCATE = 'RESCATE',
-  LIMPEZA = 'LIMPEZA'
+  LIMPEZA = 'LIMPEZA',
+  PLANTIO = 'PLANTIO',
 }
 
 export enum TaskStatus {
@@ -58,6 +59,7 @@ export interface Action {
   type: string;
   description: string;
   photos: string[];
+  metadata?: unknown;
   location: {
     latitude: number;
     longitude: number;

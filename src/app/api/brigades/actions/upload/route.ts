@@ -21,6 +21,7 @@ function toPublicAction(action: {
   photos: string[];
   latitude: number;
   longitude: number;
+  metadata: any;
   createdAt: Date;
 }) {
   return {
@@ -30,6 +31,7 @@ function toPublicAction(action: {
     type: action.type,
     description: action.description,
     photos: action.photos ?? [],
+    metadata: action.metadata ?? undefined,
     location: { latitude: action.latitude, longitude: action.longitude },
     createdAt: action.createdAt.toISOString(),
   };
@@ -66,6 +68,15 @@ export async function POST(req: Request) {
     const lngRaw = typeof form.get('longitude') === 'string' ? String(form.get('longitude')).trim() : '';
     const latitude = Number(latRaw);
     const longitude = Number(lngRaw);
+    const metadataRaw = typeof form.get('metadata') === 'string' ? String(form.get('metadata')).trim() : '';
+    let metadata: any = null;
+    if (metadataRaw) {
+      try {
+        metadata = JSON.parse(metadataRaw);
+      } catch {
+        return NextResponse.json({ error: 'Metadata inválida' }, { status: 400 });
+      }
+    }
 
     const photosFiles = form.getAll('photos').filter((p) => p instanceof File) as File[];
     if (!taskId || !type || !description) {
@@ -105,6 +116,7 @@ export async function POST(req: Request) {
         photos: savedPhotos,
         latitude,
         longitude,
+        metadata,
       },
     });
 
@@ -116,4 +128,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Erro ao criar ação' }, { status: 500 });
   }
 }
-

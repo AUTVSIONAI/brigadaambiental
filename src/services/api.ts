@@ -737,6 +737,7 @@ class ApiService {
     latitude: number;
     longitude: number;
     photos: File[];
+    metadata?: unknown;
   }): Promise<Action> {
     const fd = new FormData();
     fd.set('taskId', form.taskId);
@@ -744,6 +745,7 @@ class ApiService {
     fd.set('description', form.description);
     fd.set('latitude', String(form.latitude));
     fd.set('longitude', String(form.longitude));
+    if (form.metadata !== undefined) fd.set('metadata', JSON.stringify(form.metadata));
     form.photos.forEach((file) => fd.append('photos', file));
     return this.requestFormData<Action>('/brigades/actions/upload', fd, { method: 'POST' });
   }
