@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { apiService } from '@/services/api';
 import { Action, TaskType } from '@/types/brigada';
+import Image from 'next/image';
 
 export function RecentActions({ userId, limit = 6 }: { userId?: string; limit?: number }) {
   const [actions, setActions] = useState<Action[] | null>(null);
   const [userNameById, setUserNameById] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState<Action | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -56,6 +58,7 @@ export function RecentActions({ userId, limit = 6 }: { userId?: string; limit?: 
       const location = `${action.location.latitude.toFixed(4)}, ${action.location.longitude.toFixed(4)}`;
       return {
         id: action.id,
+        raw: action,
         user,
         description: action.description,
         location,
@@ -71,7 +74,12 @@ export function RecentActions({ userId, limit = 6 }: { userId?: string; limit?: 
       <div className="space-y-4">
         {!items && <p className="text-gray-600">Carregando ações...</p>}
         {items?.map((action) => (
-          <div key={action.id} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+          <button
+            key={action.id}
+            type="button"
+            onClick={() => setSelected(action.raw)}
+            className="w-full flex items-center space-x-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 text-left"
+          >
             <div className={`w-2 h-2 rounded-full ${action.dotColor}`}></div>
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-900">{action.user}</p>
@@ -80,10 +88,53 @@ export function RecentActions({ userId, limit = 6 }: { userId?: string; limit?: 
                 {action.location} • {action.time}
               </p>
             </div>
-          </div>
+          </button>
         ))}
         {items?.length === 0 && <p className="text-gray-600">Nenhuma ação registrada ainda.</p>}
       </div>
+      {selected && (
+        <dialog open className="w-full max-w-3xl p-0 bg-white rounded-lg shadow-xl">
+          <div className="p-6 space-y-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="text-sm text-gray-500">Ação</div>
+                <div className="text-lg font-semibold text-gray-900">{selected.description}</div>
+                <div className="text-xs text-gray-500">
+                  {new Date(selected.createdAt).toLocaleString('pt-BR')} • {selected.location.latitude.toFixed(4)},{' '}
+                  {selected.location.longitude.toFixed(4)}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                className="text-gray-500 hover:text-gray-700 px-3 py-1 border rounded-md"
+              >
+                Fechar
+              </button>
+            </div>
+
+            <div className="text-sm text-gray-700">
+              Brigadista:{' '}
+              <a
+                href={`/dashboard/admin/usuario/${selected.userId}`}
+                className="text-blue-600 hover:underline"
+              >
+                {userNameById[selected.userId] ?? selected.userId}
+              </a>
+            </div>
+
+            {selected.photos && selected.photos.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {selected.photos.slice(0, 4).map((src, idx) => (
+                  <div key={idx} className="border rounded-md overflow-hidden">
+                    <Image src={src} alt={`Foto ${idx + 1}`} width={1200} height={900} className="w-full object-contain bg-gray-50" unoptimized />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </dialog>
+      )}
     </div>
   );
 }

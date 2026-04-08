@@ -730,6 +730,24 @@ class ApiService {
     });
   }
 
+  async createActionWithPhotos(form: {
+    taskId: string;
+    type: string;
+    description: string;
+    latitude: number;
+    longitude: number;
+    photos: File[];
+  }): Promise<Action> {
+    const fd = new FormData();
+    fd.set('taskId', form.taskId);
+    fd.set('type', form.type);
+    fd.set('description', form.description);
+    fd.set('latitude', String(form.latitude));
+    fd.set('longitude', String(form.longitude));
+    form.photos.forEach((file) => fd.append('photos', file));
+    return this.requestFormData<Action>('/brigades/actions/upload', fd, { method: 'POST' });
+  }
+
   // Locations endpoints
   async getLocationPings(params?: { since?: string }): Promise<LocationPing[]> {
     if (MOCK_AUTH_ENABLED) {

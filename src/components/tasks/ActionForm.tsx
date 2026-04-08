@@ -56,18 +56,16 @@ export function ActionForm() {
     setSuccess(false);
 
     try {
-      const actionData = {
+      const latitude = parseFloat(formData.latitude);
+      const longitude = parseFloat(formData.longitude);
+      await apiService.createActionWithPhotos({
         taskId: formData.taskId,
         type: formData.type,
         description: formData.description,
-        photos: formData.photos.map((file) => URL.createObjectURL(file)),
-        location: {
-          latitude: parseFloat(formData.latitude),
-          longitude: parseFloat(formData.longitude),
-        },
-      };
-
-      await apiService.createAction(actionData);
+        latitude,
+        longitude,
+        photos: formData.photos,
+      });
       
       // Limpar formulário
       setFormData({
